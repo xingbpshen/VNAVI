@@ -1,3 +1,5 @@
+vnavibackend/env/*
+
 gpu-request.sh
 .DS_Store
 
