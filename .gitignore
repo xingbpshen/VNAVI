@@ -1,4 +1,5 @@
 vnavibackend/env/*
+vnavibackend/yolov5_models/door_detect/*.pt
 
 gpu-request.sh
 .DS_Store
