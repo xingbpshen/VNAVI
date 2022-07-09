@@ -29,6 +29,8 @@ def detect():
     file = extract_image(request)
     image = Image.open(io.BytesIO(file.read()))
     result = model(image, size=1280)
+    print(result)
+    result.show()
     result.render()
     for img in result.imgs:
         rgb_image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
