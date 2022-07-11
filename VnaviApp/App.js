@@ -1,11 +1,77 @@
 import React, {Component} from 'react';
-import {StyleSheet, View, Alert, TouchableOpacity, Text} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Alert,
+  TouchableOpacity,
+  Text,
+  Platform,
+  Image,
+} from 'react-native';
 import {RNCamera} from 'react-native-camera';
-import axios from 'axios';
+import RNFetchBlob from 'rn-fetch-blob';
+import base64 from 'base-64';
 
 class App extends Component {
   state = {
     takingPic: false,
+  };
+
+  takePicture_img = async () => {
+    if (this.camera && !this.state.takingPic) {
+      let options = {
+        quality: 0.85,
+        fixOrientation: true,
+        forceUpOrientation: true,
+      };
+
+      this.setState({takingPic: true});
+
+      try {
+        const data = await this.camera.takePictureAsync(options);
+        // Alert.alert('Successful', JSON.stringify(data));
+
+        let body = new FormData();
+        body.append('file', {
+          uri: data.uri,
+          name: 'photo.jpg',
+          type: 'image/jpeg',
+        });
+        RNFetchBlob.config({
+          fileCache: true,
+          appendExt: 'jpg',
+        })
+          .fetch(
+            'POST',
+            'http://10.0.2.2:5000/detect-res-img',
+            {'Content-Type': 'multipart/form-data'},
+            base64.encode(body),
+          )
+          // .then(res => checkStatus(res))
+          // .then(res => res.json())
+          .then(res => {
+            console.log('The file saved to ', res.path());
+            // Beware that when using a file path as Image source on Android,
+            // you must prepend "file://"" before the file path
+            // this.imageView = (
+            //   <Image
+            //     source={{
+            //       uri:
+            //         Platform.OS === 'android'
+            //           ? 'file://' + res.path()
+            //           : '' + res.path(),
+            //     }}
+            //   />
+            // );
+          });
+        // .catch(e => console.log(e))
+        // .done();
+      } catch (err) {
+        Alert.alert('Error', 'Failed to take picture: ' + (err.message || err));
+      } finally {
+        this.setState({takingPic: false});
+      }
+    }
   };
 
   takePicture = async () => {
@@ -20,7 +86,7 @@ class App extends Component {
 
       try {
         const data = await this.camera.takePictureAsync(options);
-        Alert.alert('Successful', JSON.stringify(data));
+        // Alert.alert('Successful', JSON.stringify(data));
 
         let body = new FormData();
         body.append('file', {
@@ -29,7 +95,7 @@ class App extends Component {
           type: 'image/jpeg',
         });
 
-        fetch('http://10.0.2.2:5000/detect', {
+        fetch('http://10.0.2.2:5000/detect-res-json', {
           method: 'POST',
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -40,6 +106,7 @@ class App extends Component {
           .then(res => res.json())
           .then(res => {
             console.log('response' + JSON.stringify(res));
+            Alert.alert('Results:', JSON.stringify(res));
           })
           .catch(e => console.log(e))
           .done();
@@ -64,7 +131,13 @@ class App extends Component {
           activeOpacity={0.5}
           style={styles.button}
           onPress={this.takePicture}>
-          <Text style={{alignItems: 'center'}}>Take picture</Text>
+          <Text style={{alignItems: 'center'}}>Take picture (json)</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          style={styles.button}
+          onPress={this.takePicture_img}>
+          <Text style={{alignItems: 'center'}}>Take picture (img)</Text>
         </TouchableOpacity>
       </View>
     );
@@ -73,7 +146,7 @@ class App extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 6,
+    flex: 7,
     flexDirection: 'column',
     backgroundColor: 'black',
     // justifyContent: 'center',
