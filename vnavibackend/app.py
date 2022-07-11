@@ -21,15 +21,6 @@ def extract_image(request_in):
     return file
 
 
-def extract_image_b64(request_in):
-    if 'file' not in request_in.files:
-        raise BadRequest("Missing file (image/jpeg).")
-    file = request_in.files['file']
-    if file.filename == '':
-        raise BadRequest("File name is invalid.")
-    return file
-
-
 @app.route('/')
 def hello_world():
     return '<h1>Hello World!</h1>'
@@ -37,11 +28,11 @@ def hello_world():
 
 @app.route('/detect-res-img', methods=['POST'])
 def detect():
-    file = extract_image_b64(request)
+    file = extract_image(request)
     image = Image.open(io.BytesIO(file.read()))
     result = model(image, size=1280)
-    print(result)
-    result.show()
+    # print(result)
+    # result.show()
     result.render()
     for img in result.imgs:
         rgb_image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)

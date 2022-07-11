@@ -7,15 +7,26 @@ import {
   Text,
   Platform,
   Image,
+  Modal,
+  Button,
 } from 'react-native';
 import {RNCamera} from 'react-native-camera';
 import RNFetchBlob from 'rn-fetch-blob';
-import base64 from 'base-64';
 
 class App extends Component {
+  url = 'http://10.0.2.2:5000/';
+  my_path = '';
+
   state = {
     takingPic: false,
+    isVisible: false,
   };
+
+  // showPred = () => {
+  //   return (
+  //
+  //   )
+  // }
 
   takePicture_img = async () => {
     if (this.camera && !this.state.takingPic) {
@@ -31,26 +42,35 @@ class App extends Component {
         const data = await this.camera.takePictureAsync(options);
         // Alert.alert('Successful', JSON.stringify(data));
 
-        let body = new FormData();
-        body.append('file', {
-          uri: data.uri,
-          name: 'photo.jpg',
-          type: 'image/jpeg',
-        });
+        // let body = new FormData();
+        // body.append('file', {
+        //   uri: data.uri,
+        //   name: 'photo.jpg',
+        //   type: 'image/jpeg',
+        // });
         RNFetchBlob.config({
           fileCache: true,
           appendExt: 'jpg',
         })
           .fetch(
             'POST',
-            'http://10.0.2.2:5000/detect-res-img',
+            this.url + 'detect-res-img',
             {'Content-Type': 'multipart/form-data'},
-            base64.encode(body),
+            [
+              {
+                name: 'file',
+                filename: 'photo.jpg',
+                type: 'image/jpeg',
+                data: RNFetchBlob.wrap(data.uri),
+              },
+            ],
           )
           // .then(res => checkStatus(res))
           // .then(res => res.json())
           .then(res => {
             console.log('The file saved to ', res.path());
+            this.my_path = res.path();
+            this.setState({isVisible: true});
             // Beware that when using a file path as Image source on Android,
             // you must prepend "file://"" before the file path
             // this.imageView = (
@@ -63,9 +83,9 @@ class App extends Component {
             //     }}
             //   />
             // );
-          });
-        // .catch(e => console.log(e))
-        // .done();
+          })
+          .catch(e => console.log(e))
+          .done();
       } catch (err) {
         Alert.alert('Error', 'Failed to take picture: ' + (err.message || err));
       } finally {
@@ -95,7 +115,7 @@ class App extends Component {
           type: 'image/jpeg',
         });
 
-        fetch('http://10.0.2.2:5000/detect-res-json', {
+        fetch(this.url + 'detect-res-json', {
           method: 'POST',
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -139,6 +159,40 @@ class App extends Component {
           onPress={this.takePicture_img}>
           <Text style={{alignItems: 'center'}}>Take picture (img)</Text>
         </TouchableOpacity>
+        <Modal
+          animationType={'fade'}
+          transparent={false}
+          visible={this.state.isVisible}
+          onRequestClose={() => {
+            console.log('Modal has been closed.');
+          }}>
+          {/*All views of Modal*/}
+          <View style={styles.modal}>
+            {/*<Text style={styles.text}>Modal is open!</Text>*/}
+            <Image
+              style={styles.image}
+              source={{
+                uri:
+                  Platform.OS === 'android'
+                    ? 'file://' + this.my_path
+                    : '' + this.my_path,
+                // 'https://reactnative.dev/img/tiny_logo.png',
+              }}
+            />
+            <Button
+              title="Back"
+              onPress={() => {
+                this.setState({isVisible: !this.state.isVisible});
+              }}
+            />
+          </View>
+        </Modal>
+        {/*<Button*/}
+        {/*  title="Open Preview"*/}
+        {/*  onPress={() => {*/}
+        {/*    this.setState({isVisible: true});*/}
+        {/*  }}*/}
+        {/*/>*/}
       </View>
     );
   }
@@ -158,20 +212,22 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
   },
+  modal: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    // backgroundColor: '#00BCD4',
+    // height: '85%',
+    // width: '85%',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#fff',
+    marginTop: 80,
+    marginLeft: 40,
+  },
+  image: {
+    width: '85%',
+    height: '85%',
+  },
 });
 
 export default App;
-
-// import React from 'react';
-// import Camera from './Camera';
-// import {SafeAreaView} from 'react-native';
-// const App = () => {
-//   return (
-//     <>
-//       <SafeAreaView styles={{flex: 1}}>
-//         <Camera />
-//       </SafeAreaView>
-//     </>
-//   );
-// };
-// export default App;
