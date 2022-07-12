@@ -14,7 +14,7 @@ import {RNCamera} from 'react-native-camera';
 import RNFetchBlob from 'rn-fetch-blob';
 
 class App extends Component {
-  url = 'http://10.0.2.2:5000/';
+  url = 'http://47.104.176.95/';
   my_path = '';
 
   state = {

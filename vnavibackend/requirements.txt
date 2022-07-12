@@ -1,7 +1,9 @@
-# YOLOv5 requirements
+# VNAVI requirements
 # Usage: pip install -r requirements.txt
 
 # Base ----------------------------------------
+gunicorn>=20.1.0
+flask>=2.1.2
 matplotlib>=3.2.2
 numpy>=1.18.5
 opencv-python>=4.1.1
@@ -9,8 +11,8 @@ Pillow>=7.1.2
 PyYAML>=5.3.1
 requests>=2.23.0
 scipy>=1.4.1  # Google Colab version
-torch>=1.7.0
-torchvision>=0.8.1
+torch!=1.12.0>=1.7.0
+torchvision!=0.13.0>=0.8.1
 tqdm>=4.41.0
 protobuf<=3.20.1  # https://github.com/ultralytics/yolov5/issues/8012
 
@@ -38,3 +40,5 @@ thop  # FLOPs computation
 # albumentations>=1.0.3
 # pycocotools>=2.0  # COCO mAP
 # roboflow
+
+Werkzeug~=2.1.2
