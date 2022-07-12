@@ -5,7 +5,6 @@ import torch
 import cv2
 import io
 import json
-import base64
 
 app = Flask(__name__)
 
@@ -80,4 +79,4 @@ def detect_res_json():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
