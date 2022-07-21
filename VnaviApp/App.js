@@ -10,12 +10,14 @@ import {
   Modal,
   Button,
 } from 'react-native';
+import ImageEditor from '@react-native-community/image-editor';
 import {RNCamera} from 'react-native-camera';
 import RNFetchBlob from 'rn-fetch-blob';
 
 class App extends Component {
   url = 'http://47.104.176.95/';
   my_path = '';
+  resized_img_path = '';
 
   state = {
     takingPic: false,
@@ -42,6 +44,16 @@ class App extends Component {
         const data = await this.camera.takePictureAsync(options);
         // Alert.alert('Successful', JSON.stringify(data));
 
+        // Resizing image to reduce transmission time
+        const cropData = {
+          offset: {x: 0, y: 0},
+          size: {width: data.width, height: data.height},
+          displaySize: {width: 480, height: 640},
+        };
+        await ImageEditor.cropImage(data.uri, cropData).then(url => {
+          this.resized_img_path = url;
+        });
+
         // let body = new FormData();
         // body.append('file', {
         //   uri: data.uri,
@@ -61,7 +73,8 @@ class App extends Component {
                 name: 'file',
                 filename: 'photo.jpg',
                 type: 'image/jpeg',
-                data: RNFetchBlob.wrap(data.uri),
+                // data: RNFetchBlob.wrap(data.uri),
+                data: RNFetchBlob.wrap(this.resized_img_path),
               },
             ],
           )

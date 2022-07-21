@@ -1,5 +1,6 @@
 vnavibackend/env/*
 vnavibackend/yolov5_models/door_detect/*.pt
+VnaviApp/android/app/src/main/assets/index.android.bundle
 
 gpu-request.sh
 .DS_Store
