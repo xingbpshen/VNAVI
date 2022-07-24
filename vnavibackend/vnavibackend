@@ -1,0 +1,14 @@
+server{
+        listen 80;
+        server_name ;
+
+        location /static {
+                alias /vnavibackend/static;
+        }
+
+        location / {
+                proxy_pass http://localhost:8000;
+                include /etc/nginx/proxy_params;
+                proxy_redirect off;
+        }
+}
