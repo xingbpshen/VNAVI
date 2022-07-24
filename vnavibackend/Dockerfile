@@ -14,9 +14,11 @@ COPY requirements.txt /vnavibackend/requirements.txt
 
 RUN conda install --yes --file /vnavibackend/requirements.txt
 
-RUN sudo apt install nginx
+RUN apt install tmux
 
-RUN sudo rm /etc/nginx/sites-enabled/default
+RUN apt install nginx
+
+RUN rm /etc/nginx/sites-enabled/default
 
 COPY ./vnavibackend /etc/nginx/sites-enabled/
 
