@@ -77,4 +77,4 @@ The server side application supports docker and docker compose. The base image f
   
 [3] MiguelARD. Door Detect Dataset. Available at: https://github.com/MiguelARD/DoorDetect-Dataset.
   
-[4] PyTorch. PyTorch Docker Image. AVailable at: https://hub.docker.com/r/pytorch/pytorch.
+[4] PyTorch. PyTorch Docker Image. Available at: https://hub.docker.com/r/pytorch/pytorch.
