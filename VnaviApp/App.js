@@ -15,7 +15,7 @@ import {RNCamera} from 'react-native-camera';
 import RNFetchBlob from 'rn-fetch-blob';
 
 class App extends Component {
-  url = 'http://47.104.176.95/';
+  url = 'http://132.206.74.92:8002/';
   my_path = '';
   resized_img_path = '';
 

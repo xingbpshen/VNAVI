@@ -1,0 +1,13 @@
+services:
+        vnavibackend:
+                build: .
+                ports:
+                        - "8002:80"
+                command: gunicorn -b localhost:8000 app:app
+                deploy:
+                        resources:
+                                reservations:
+                                        devices:
+                                                - driver: nvidia
+                                                  device_ids: ['0']
+                                                  capabilities: [gpu]

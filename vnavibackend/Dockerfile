@@ -10,16 +10,22 @@ WORKDIR /vnavibackend
 
 ENV PORT 80
 
+ENV PORT 8000
+
 COPY requirements.txt /vnavibackend/requirements.txt
 
-RUN conda install --yes --file /vnavibackend/requirements.txt
+RUN pip install -r /vnavibackend/requirements.txt
 
-RUN apt install tmux
-
-RUN apt install nginx
+RUN apt -y install nginx
 
 RUN rm /etc/nginx/sites-enabled/default
 
+RUN rm /etc/nginx/nginx.conf
+
 COPY ./vnavibackend /etc/nginx/sites-enabled/
+
+COPY ./nginx.conf /etc/nginx/
+
+RUN service nginx restart
 
 COPY . /vnavibackend
