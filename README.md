@@ -18,7 +18,7 @@ _<sup>Key words: React Native, Nginx, Gunicorn, Python, YOLOv5, PyTorch, Docker,
         <img src="./Resources/logo-gunicorn.png" width="40%" hspace=50/>
     </a>
     <a href="https://www.nginx.com">
-        <img src="./Resources/logo-nginx.png" width="9%" hspace=50/>
+        <img src="./Resources/logo-nginx.png" width="9%"/>
     </a>
     <br>
     <a href="https://www.docker.com">
