@@ -43,8 +43,8 @@ This section berifly presents some of key points of the whole system, including 
 As the rising demand of application capabilities, it is hard and time-consuming for developers to transform the source code to different platforms. To solve this issue, we use a cross-platform framework React Native when developing the client app. The app starts the built-in camera in the mobile phone, and captures pictures that will be sent to the server for analysis. In addition, the client app gives feedback after it retrieving the analysis result from the server.
 
 <p align="center">
-  <img width="380" src="./Resources/v0.0.1_client_interface1.png" alt="v0.0.1 Client Camera View">
-  <img width="427" src="./Resources/v0.0.1_client_interface2.png" alt="v0.0.1 Client Result Window">
+  <img width="370" src="./Resources/v0.0.1_client_interface1.png" alt="v0.0.1 Client Camera View">
+  <img width="417" src="./Resources/v0.0.1_client_interface2.png" alt="v0.0.1 Client Result Window">
   <br>Figure 1: App Client View (v0.0.1).
 </p>
 
