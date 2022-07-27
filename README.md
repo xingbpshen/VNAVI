@@ -38,7 +38,7 @@ The Door Detect dataset [3] serves training and testing purposes. The training s
 </p>
 
 ## 5 &nbsp;&nbsp; Docker and Docker Compose
-The server side application supports docker and docker compose. The base image for this docker image is from PyTorch with CUDA runtime [4], the tag for teh specific image that we use is _1.11.0-cuda11.3-cudnn8-runtime_. GPU accesses from docker container requires docker compose, the initial configuration points to the GPU with index 0 on the device.
+The server side application supports docker and docker compose. The base image for this docker image is from PyTorch with CUDA runtime [4], the tag for the specific image that we use is _1.11.0-cuda11.3-cudnn8-runtime_. GPU accesses from docker container requires docker compose, the initial configuration points to the GPU with index 0 on the device.
 
 ## 6 &nbsp;&nbsp; References
 [1]. 
