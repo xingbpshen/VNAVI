@@ -1,7 +1,7 @@
 # VNAVI
 The repository for Vision-guided Navigation Assistance for the Visually Impaired project [1].  
   
-_<sup>Key words: React Native, Nginx, Gunicorn, Python, YOLOv5, PyTorch, Docker, Linux</sup>_
+_<sup>Key words: React Native, Nginx, Gunicorn, Python, YOLOv5, PyTorch, Docker, Linux.</sup>_
   
 <div align="center">
     <a href="https://reactnative.dev">
