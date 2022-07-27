@@ -26,3 +26,4 @@ The Flask server is responsible for receiving and processing requests from clien
 The most important task is creating a robust object detection workflow. After comparing a varity of deep learning CV approaches, we choose to take advantage of YOLOv5 as it is highly customizable and has a strong capability of detecting multiple objects.
 
 The Door-detect dataset [3] serves training and testing purposes. The training set includes 1092 randomly picked images and labels, the remaining 121 images and labels are used for testing. A YOLOv5m with 1280 inputs is trained with the Door-detect dataset, the following figure shows the training and validation results.
+![alt text](http://url/to/img.png)
