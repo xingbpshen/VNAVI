@@ -35,12 +35,12 @@ The Door Detect dataset [3] serves training and testing purposes. The training s
 
 <p align="center">
   <img width="1200" src="./Resources/media_images_Results_50.png" alt="Metrics">
-  Figure 1: Metrics.
+  Figure 2: Metrics.
 </p>
 
 <p align="center">
   <img width="1200" src="./Resources/media_images_Validation_50.jpg" alt="Validation">
-  Figure 2: Validation.
+  Figure 3: Validation.
 </p>
 
 ## 5 &nbsp;&nbsp; Docker and Docker Compose
