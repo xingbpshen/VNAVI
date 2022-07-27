@@ -40,3 +40,8 @@ The Door-detect dataset [3] serves training and testing purposes. The training s
 ## 5 &nbsp;&nbsp; Docker and Docker Compose
 
 ## 6 &nbsp;&nbsp; References
+[1]. 
+  
+[2] Ultralytics. You Only Look Once v5 (YOLOv5). Available at: https://github.com/ultralytics/yolov5
+  
+[3] 
