@@ -2,6 +2,30 @@
 The repository for Vision-guided Navigation Assistance for the Visually Impaired project [1].  
   
 _<sup>Key words: React Native, Nginx, Gunicorn, Python, YOLOv5, PyTorch, Docker, Linux</sup>_
+  
+<div align="center">
+    <a href="https://reactnative.dev">
+        <img src="./Resources/logo-reactnative.png" width="10%"/>
+    </a>
+    <a href="https://pytorch.org">
+        <img src="./Resources/logo-pytorch.png" width="35%" hspace=50/>
+    </a>
+    <a href="https://flask.palletsprojects.com">
+        <img src="./Resources/logo-flask.png" width="25%"/>
+    </a>
+    <br><br>
+    <a href="https://gunicorn.org">
+        <img src="./Resources/logo-gunicorn.png" width="40%" hspace=50/>
+    </a>
+    <a href="https://www.nginx.com">
+        <img src="./Resources/logo-nginx.png" width="9%"/>
+    </a>
+    <br>
+    <a href="https://www.docker.com">
+        <img src="./Resources/logo-docker.png" width="15%" vspace=50/>
+    </a>
+</div>
+
 
 ## 1 &nbsp;&nbsp; Introduction
 This application helps visually impaired people to reach objects of interest by performing camera captured image analysis and giving audio navigation on mobile phones. We expect the application is capable to run on multiple mobile platforms, e.g. Android and iOS. And the analysis should carry out locally or on cloud.
