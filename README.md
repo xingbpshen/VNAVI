@@ -1,12 +1,13 @@
-# VNAVI
-The repository for Vision-guided Navigation Assistance for the Visually Impaired project [1].  
+<h1 align="center">VNAVI</h1>
 
-<div>
+<div align="center">
    <a href="https://github.com/AntonioShen/VNAVI/actions/workflows/docker-image.yml"><img src="https://github.com/AntonioShen/VNAVI/actions/workflows/docker-image.yml/badge.svg" alt="CI CPU testing"></a>
-</div>  
-  
-_<sup>Key words: React Native, Nginx, Gunicorn, Python, YOLOv5, PyTorch, Docker, Linux.</sup>_
-  
+   <br><br>
+   The repository for Vision-guided Navigation Assistance for the Visually Impaired project [1].  
+   <br><br>
+   <i><sup>Key words: React Native, Nginx, Gunicorn, Python, YOLOv5, PyTorch, Docker, Linux.</sup></i>
+</div>
+
 <div align="center">
     <a href="https://reactnative.dev">
         <img src="./Resources/logo-reactnative.png" width="10%"/>
