@@ -15,4 +15,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file ./vnavibackend/Dockerfile --tag vnavibackend:$(date +%s)
+      run: cd vnavibackend && docker build . --file Dockerfile --tag vnavibackend:$(date +%s)
