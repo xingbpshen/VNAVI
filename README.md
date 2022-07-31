@@ -1,5 +1,9 @@
 # VNAVI
 The repository for Vision-guided Navigation Assistance for the Visually Impaired project [1].  
+
+<div>
+   <a href="https://github.com/AntonioShen/VNAVI/actions/workflows/docker-image.yml"><img src="https://github.com/AntonioShen/VNAVI/actions/workflows/docker-image.yml/badge.svg" alt="CI CPU testing"></a>
+</div>  
   
 _<sup>Key words: React Native, Nginx, Gunicorn, Python, YOLOv5, PyTorch, Docker, Linux.</sup>_
   
@@ -71,7 +75,7 @@ The Door Detect dataset [3] serves training and testing purposes. The training s
 The server side application supports docker and docker compose. The base image for this docker image is from PyTorch with CUDA runtime [4], the tag for the specific image that we use is [_1.11.0-cuda11.3-cudnn8-runtime_](https://hub.docker.com/layers/pytorch/pytorch/pytorch/1.11.0-cuda11.3-cudnn8-runtime/images/sha256-9904a7e081eaca29e3ee46afac87f2879676dd3bf7b5e9b8450454d84e074ef0?context=explore). GPU accesses from docker container requires docker compose, the initial configuration points to the GPU with index 0 on the device.
 
 ## 6 &nbsp;&nbsp; References
-[1]. 
+[1] Shared Reality Lab, McGill University. Vision-guided Navigation Assistance for the Visually Impaired Project. Available at: http://srl.mcgill.ca/projects/.
   
 [2] Ultralytics. You Only Look Once v5 (YOLOv5). Available at: https://github.com/ultralytics/yolov5.
   
