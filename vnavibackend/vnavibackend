@@ -1,6 +1,6 @@
 server{
         listen 80;
-        server_name ;
+        server_name 0.0.0.0;
 
         location /static {
                 alias /vnavibackend/static;
