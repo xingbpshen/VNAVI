@@ -26,6 +26,6 @@ COPY ./vnavibackend /etc/nginx/sites-enabled/
 
 COPY ./nginx.conf /etc/nginx/
 
-RUN service nginx restart
+RUN /etc/init.d/nginx restart
 
 COPY . /vnavibackend
