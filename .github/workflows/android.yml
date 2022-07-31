@@ -23,4 +23,4 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x VnaviApp/android/gradlew
     - name: Build with Gradle
-      run: cd VnaviApp && npm install --legacy-peer-deps && cd android && ./gradlew build
+      run: cd VnaviApp && npm install --legacy-peer-deps && cd android && ./gradlew assembleDebug
