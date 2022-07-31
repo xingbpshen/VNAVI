@@ -1,7 +1,8 @@
 <h1 align="center">VNAVI</h1>
 
 <div align="center">
-   <a href="https://github.com/AntonioShen/VNAVI/actions/workflows/docker-image.yml"><img src="https://github.com/AntonioShen/VNAVI/actions/workflows/docker-image.yml/badge.svg" alt="CI CPU testing"></a>
+   <a href="https://github.com/AntonioShen/VNAVI/actions/workflows/docker-image.yml"><img src="https://github.com/AntonioShen/VNAVI/actions/workflows/docker-image.yml/badge.svg" alt="CI CPU testing" hspace=4></a>
+   <a href="https://github.com/AntonioShen/VNAVI/actions/workflows/android.yml"><img src="https://github.com/AntonioShen/VNAVI/actions/workflows/android.yml/badge.svg" alt="CI CPU testing"></a>
    <br><br>
    The repository for Vision-guided Navigation Assistance for the Visually Impaired project.  
    <br><br>
