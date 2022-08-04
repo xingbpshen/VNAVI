@@ -22,7 +22,7 @@ def extract_image(request_in):
 
 @app.route('/')
 def hello_world():
-    return '<h1>Hello World!</h1>'
+    return '<h1>Welcome to VNAVI!</h1>'
 
 
 @app.route('/detect-res-img', methods=['POST'])
@@ -30,8 +30,6 @@ def detect():
     file = extract_image(request)
     image = Image.open(io.BytesIO(file.read()))
     result = model(image, size=1280)
-    print(result)
-    # result.show()
     result.render()
     for img in result.imgs:
         rgb_image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -43,14 +41,7 @@ def detect():
 
 def parse_result(result):
     df = result.pandas().xyxy[0]
-    # df.set_index('name', inplace=True)
     df = df.drop(df[df.name != 'door'].index)
-    # doors_count = 0
-    # for i in df.index.values:
-    #     if i == 'door':
-    #         doors_count = doors_count + 1
-    # res_json = json.dumps({'detected': str(doors_count)})
-    # print(res_json)
     df_json = df.to_json(orient="split")
     res_json = json.loads(df_json)
     return json.dumps(res_json, indent=4)
@@ -62,17 +53,6 @@ def detect_res_json():
     image = Image.open(io.BytesIO(file.read()))
     result = model(image, size=1280)
     res_json = parse_result(result)
-    # df = result.pandas().xyxy[0]
-    # df.set_index('name', inplace=True)
-    # if 'door' not in df.index.values:
-    #     response = make_response(json.dumps({'detected': 'OK2'}), 200)
-    #     response.headers['Content-type'] = 'application/json'
-    #     return response
-    # doors = df.loc['door']
-    # if type(doors) == pd.Series:
-    #     doors = doors.to_frame()
-    # print(type(doors))
-    # print(doors)
     response = make_response(res_json, 200)
     response.headers['Content-type'] = 'application/json'
     return response
