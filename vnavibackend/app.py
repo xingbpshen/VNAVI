@@ -5,6 +5,7 @@ import torch
 import cv2
 import io
 import json
+import pandas as pd
 
 app = Flask(__name__)
 
@@ -40,9 +41,40 @@ def detect():
 
 
 def parse_result(result):
+    h = result.imgs[0].shape[0]
+    w = result.imgs[0].shape[1]
     df = result.pandas().xyxy[0]
     df = df.drop(df[df.name != 'door'].index)
-    df_json = df.to_json(orient="split")
+    data_list = []
+    for i in range(df.shape[0]):
+        est_orientation = 0
+        w_mid_pt = (float(df.iloc[i]['xmin']) + float(df.iloc[i]['xmax'])) / 2
+        slice_thirty_deg = float(w) / 8.0
+        if w_mid_pt <= slice_thirty_deg:
+            est_orientation = 10
+        elif slice_thirty_deg < w_mid_pt <= 3 * slice_thirty_deg:
+            est_orientation = 11
+        elif 3 * slice_thirty_deg < w_mid_pt <= 5 * slice_thirty_deg:
+            est_orientation = 12
+        elif 5 * slice_thirty_deg < w_mid_pt <= 7 * slice_thirty_deg:
+            est_orientation = 1
+        elif w_mid_pt > 7 * slice_thirty_deg:
+            est_orientation = 2
+        est_distance = 999
+        confidence = float(df.iloc[i]['confidence'])
+        if confidence >= 0.75:
+            door_height = float(df.iloc[i]['ymax']) - float(df.iloc[i]['ymin'])
+            dh_to_h_r = door_height / h
+            if dh_to_h_r >= 1:
+                est_distance = 0
+            else:
+                est_distance = 1.5 / dh_to_h_r
+        data_list.insert(len(data_list),
+                         [est_orientation,
+                          float("{:.3f}".format(est_distance)),
+                          float("{:.3f}".format(confidence))])
+    new_df = pd.DataFrame(data_list, columns=['orientation(clk)', 'distance(m)', 'confidence'])
+    df_json = new_df.to_json(orient='split')
     res_json = json.loads(df_json)
     return json.dumps(res_json, indent=4)
 

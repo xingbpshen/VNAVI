@@ -17,6 +17,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 class App extends Component {
   // Change this url to the server's IP:PORT
   url = 'http://132.206.74.92:8002/';
+  // url = 'http://10.0.2.2:5000/';
   my_path = '';
   resized_img_path = '';
 
@@ -153,13 +154,27 @@ class App extends Component {
           activeOpacity={0.5}
           style={styles.button}
           onPress={this.takePicture}>
-          <Text style={{alignItems: 'center'}}>Take picture (json)</Text>
+          <Text
+            style={{
+              alignItems: 'center',
+              color: '#ffffff',
+              fontWeight: 'bold',
+            }}>
+            ANALYSIS ONCE (JSON)
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           activeOpacity={0.5}
           style={styles.button}
           onPress={this.takePicture_img}>
-          <Text style={{alignItems: 'center'}}>Take picture (img)</Text>
+          <Text
+            style={{
+              alignItems: 'center',
+              color: '#ffffff',
+              fontWeight: 'bold',
+            }}>
+            TAKE PICTURE (img)
+          </Text>
         </TouchableOpacity>
         <Modal
           animationType={'fade'}
@@ -200,7 +215,7 @@ const styles = StyleSheet.create({
   },
   button: {
     alignItems: 'center',
-    backgroundColor: '#e600ff',
+    backgroundColor: '#008ecc',
     padding: 10,
     marginBottom: 10,
   },
@@ -210,8 +225,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#fff',
-    marginTop: 80,
-    marginLeft: 40,
   },
   image: {
     width: '85%',
