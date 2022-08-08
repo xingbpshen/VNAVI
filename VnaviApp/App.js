@@ -15,7 +15,7 @@ import {RNCamera} from 'react-native-camera';
 import RNFetchBlob from 'rn-fetch-blob';
 
 class App extends Component {
-  // Change this url to the server's IP:PORT
+  // Change this url to the server's IP:PORT, 10.0.2.2 is for AVD localhost testing purpose.
   url = 'http://132.206.74.92:8002/';
   // url = 'http://10.0.2.2:5000/';
   my_path = '';
