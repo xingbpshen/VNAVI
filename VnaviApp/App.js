@@ -15,7 +15,9 @@ import {RNCamera} from 'react-native-camera';
 import RNFetchBlob from 'rn-fetch-blob';
 
 class App extends Component {
+  // Change this url to the server's IP:PORT, 10.0.2.2 is for AVD localhost testing purpose.
   url = 'http://132.206.74.92:8002/';
+  // url = 'http://10.0.2.2:5000/';
   my_path = '';
   resized_img_path = '';
 
@@ -23,12 +25,6 @@ class App extends Component {
     takingPic: false,
     isVisible: false,
   };
-
-  // showPred = () => {
-  //   return (
-  //
-  //   )
-  // }
 
   takePicture_img = async () => {
     if (this.camera && !this.state.takingPic) {
@@ -42,7 +38,7 @@ class App extends Component {
 
       try {
         const data = await this.camera.takePictureAsync(options);
-        // Alert.alert('Successful', JSON.stringify(data));
+        // To print alerts, Alert.alert('Successful', JSON.stringify(data));
 
         // Resizing image to reduce transmission time
         const cropData = {
@@ -54,12 +50,6 @@ class App extends Component {
           this.resized_img_path = url;
         });
 
-        // let body = new FormData();
-        // body.append('file', {
-        //   uri: data.uri,
-        //   name: 'photo.jpg',
-        //   type: 'image/jpeg',
-        // });
         RNFetchBlob.config({
           fileCache: true,
           appendExt: 'jpg',
@@ -78,24 +68,14 @@ class App extends Component {
               },
             ],
           )
+          // Optional:
           // .then(res => checkStatus(res))
           // .then(res => res.json())
+
           .then(res => {
             console.log('The file saved to ', res.path());
             this.my_path = res.path();
             this.setState({isVisible: true});
-            // Beware that when using a file path as Image source on Android,
-            // you must prepend "file://"" before the file path
-            // this.imageView = (
-            //   <Image
-            //     source={{
-            //       uri:
-            //         Platform.OS === 'android'
-            //           ? 'file://' + res.path()
-            //           : '' + res.path(),
-            //     }}
-            //   />
-            // );
           })
           .catch(e => console.log(e))
           .done();
@@ -119,11 +99,21 @@ class App extends Component {
 
       try {
         const data = await this.camera.takePictureAsync(options);
-        // Alert.alert('Successful', JSON.stringify(data));
+        // To print alert, Alert.alert('Successful', JSON.stringify(data));
+
+        // Resizing image to reduce transmission time
+        const cropData = {
+          offset: {x: 0, y: 0},
+          size: {width: data.width, height: data.height},
+          displaySize: {width: 480, height: 640},
+        };
+        await ImageEditor.cropImage(data.uri, cropData).then(url => {
+          this.resized_img_path = url;
+        });
 
         let body = new FormData();
         body.append('file', {
-          uri: data.uri,
+          uri: this.resized_img_path,
           name: 'photo.jpg',
           type: 'image/jpeg',
         });
@@ -164,13 +154,27 @@ class App extends Component {
           activeOpacity={0.5}
           style={styles.button}
           onPress={this.takePicture}>
-          <Text style={{alignItems: 'center'}}>Take picture (json)</Text>
+          <Text
+            style={{
+              alignItems: 'center',
+              color: '#ffffff',
+              fontWeight: 'bold',
+            }}>
+            ANALYSIS ONCE (JSON)
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           activeOpacity={0.5}
           style={styles.button}
           onPress={this.takePicture_img}>
-          <Text style={{alignItems: 'center'}}>Take picture (img)</Text>
+          <Text
+            style={{
+              alignItems: 'center',
+              color: '#ffffff',
+              fontWeight: 'bold',
+            }}>
+            TAKE PICTURE (img)
+          </Text>
         </TouchableOpacity>
         <Modal
           animationType={'fade'}
@@ -179,9 +183,8 @@ class App extends Component {
           onRequestClose={() => {
             console.log('Modal has been closed.');
           }}>
-          {/*All views of Modal*/}
+          {/*Modal*/}
           <View style={styles.modal}>
-            {/*<Text style={styles.text}>Modal is open!</Text>*/}
             <Image
               style={styles.image}
               source={{
@@ -189,7 +192,6 @@ class App extends Component {
                   Platform.OS === 'android'
                     ? 'file://' + this.my_path
                     : '' + this.my_path,
-                // 'https://reactnative.dev/img/tiny_logo.png',
               }}
             />
             <Button
@@ -200,12 +202,6 @@ class App extends Component {
             />
           </View>
         </Modal>
-        {/*<Button*/}
-        {/*  title="Open Preview"*/}
-        {/*  onPress={() => {*/}
-        {/*    this.setState({isVisible: true});*/}
-        {/*  }}*/}
-        {/*/>*/}
       </View>
     );
   }
@@ -216,26 +212,19 @@ const styles = StyleSheet.create({
     flex: 7,
     flexDirection: 'column',
     backgroundColor: 'black',
-    // justifyContent: 'center',
-    // alignItems: 'center',
   },
   button: {
     alignItems: 'center',
-    backgroundColor: '#e600ff',
+    backgroundColor: '#008ecc',
     padding: 10,
     marginBottom: 10,
   },
   modal: {
     justifyContent: 'center',
     alignItems: 'center',
-    // backgroundColor: '#00BCD4',
-    // height: '85%',
-    // width: '85%',
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#fff',
-    marginTop: 80,
-    marginLeft: 40,
   },
   image: {
     width: '85%',
