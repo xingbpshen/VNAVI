@@ -54,6 +54,13 @@ As the rising demand of application capabilities, it is hard and time-consuming 
   <br>Figure 1: App Client View (v0.0.1).
 </p>
 
+<p align="center">
+  <img width="380" src="./Resources/v0.0.2_client_interface1.png" alt="v0.0.2 Client Camera View">
+  <img width="380" src="./Resources/v0.0.2_client_interface2.png" alt="v0.0.2 Client Result Window 1">
+  <img width="380" src="./Resources/v0.0.2_client_interface3.png" alt="v0.0.2 Client Result Window 2">
+  <br>Figure 2: App Client View (v0.0.2).
+</p>
+
 ### 3.2 &nbsp;&nbsp; Server Side
 The Flask server is responsible for receiving and processing requests from clients and making responses to them. Nginx and gunicorn help to listen requests and run python scripts. We use a customized YOLOv5 (You Only Look Once v5) [1] model to detect and locate doors in the image.
 
@@ -65,12 +72,12 @@ The Door Detect dataset [2] serves training and testing purposes. The training s
 
 <p align="center">
   <img width="1200" src="./Resources/media_images_Results_50.png" alt="Metrics">
-  Figure 2: Metrics.
+  Figure 3: Metrics.
 </p>
 
 <p align="center">
   <img width="1200" src="./Resources/media_images_Validation_50.jpg" alt="Validation">
-  Figure 3: Validation.
+  Figure 4: Validation.
 </p>
 
 ## 5 &nbsp;&nbsp; Docker and Docker Compose
