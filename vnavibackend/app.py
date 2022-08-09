@@ -31,9 +31,16 @@ def detect():
     file = extract_image(request)
     image = Image.open(io.BytesIO(file.read()))
     result = model(image, size=1280)
+    h = result.imgs[0].shape[0]
+    y0 = int(0.039 * h)
+    _, result_df = parse_result(result)
+    result_message = 'index ' + str(result_df)
     result.render()
     for img in result.imgs:
         rgb_image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        for i, line in enumerate(result_message.split('\n')):
+            y = y0 + y0 * i
+            cv2.putText(rgb_image, line, (y0 + 30, y), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 170, 86), 1, cv2.LINE_AA)
         arr = cv2.imencode('.jpg', rgb_image)[1]
         response = make_response(arr.tobytes())
         response.headers['Content-Type'] = 'image/jpeg'
@@ -76,7 +83,7 @@ def parse_result(result):
     new_df = pd.DataFrame(data_list, columns=['orientation(clk)', 'distance(m)', 'confidence'])
     df_json = new_df.to_json(orient='split')
     res_json = json.loads(df_json)
-    return json.dumps(res_json, indent=4)
+    return json.dumps(res_json, indent=4), new_df
 
 
 @app.route('/detect-res-json', methods=['POST'])
@@ -84,7 +91,7 @@ def detect_res_json():
     file = extract_image(request)
     image = Image.open(io.BytesIO(file.read()))
     result = model(image, size=1280)
-    res_json = parse_result(result)
+    res_json, _ = parse_result(result)
     response = make_response(res_json, 200)
     response.headers['Content-type'] = 'application/json'
     return response
