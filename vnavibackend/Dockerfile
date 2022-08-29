@@ -22,7 +22,11 @@ RUN rm /etc/nginx/sites-enabled/default
 
 RUN rm /etc/nginx/nginx.conf
 
+RUN mkdir -p /root/.cache/torch/hub/ultralytics_yolov5_master/
+
 COPY ./vnavibackend /etc/nginx/sites-enabled/
+
+COPY ./ultralytics_yolov5_master /root/.cache/torch/hub/ultralytics_yolov5_master/
 
 COPY ./nginx.conf /etc/nginx/
 

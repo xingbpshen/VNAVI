@@ -20,6 +20,9 @@ class App extends Component {
   // url = 'http://10.0.2.2:5000/';
   my_path = '';
   resized_img_path = '';
+  // Image resize
+  h = 1280;
+  w = 640;
 
   state = {
     takingPic: false,
@@ -44,7 +47,7 @@ class App extends Component {
         const cropData = {
           offset: {x: 0, y: 0},
           size: {width: data.width, height: data.height},
-          displaySize: {width: 480, height: 640},
+          displaySize: {width: this.w, height: this.h},
         };
         await ImageEditor.cropImage(data.uri, cropData).then(url => {
           this.resized_img_path = url;
@@ -105,7 +108,7 @@ class App extends Component {
         const cropData = {
           offset: {x: 0, y: 0},
           size: {width: data.width, height: data.height},
-          displaySize: {width: 480, height: 640},
+          displaySize: {width: this.w, height: this.h},
         };
         await ImageEditor.cropImage(data.uri, cropData).then(url => {
           this.resized_img_path = url;
@@ -227,8 +230,8 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
   },
   image: {
-    width: '85%',
-    height: '85%',
+    width: '100%',
+    height: '95%',
   },
 });
 
