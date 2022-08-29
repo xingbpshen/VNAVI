@@ -32,15 +32,15 @@ def detect():
     image = Image.open(io.BytesIO(file.read()))
     result = model(image, size=1280)
     h = result.imgs[0].shape[0]
-    y0 = int(0.039 * h)
+    y0 = int(0.1 * h)
     _, result_df = parse_result(result)
-    result_message = 'index ' + str(result_df)
+    result_message = str(result_df)
     result.render()
     for img in result.imgs:
         rgb_image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         for i, line in enumerate(result_message.split('\n')):
-            y = y0 + y0 * i
-            cv2.putText(rgb_image, line, (y0 + 30, y), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 170, 86), 1, cv2.LINE_AA)
+            y = int(y0 + 0.03 * h * i)
+            cv2.putText(rgb_image, line, (0, y), cv2.FONT_HERSHEY_PLAIN, 2.4, (255, 170, 86), 3, cv2.LINE_AA)
         arr = cv2.imencode('.jpg', rgb_image)[1]
         response = make_response(arr.tobytes())
         response.headers['Content-Type'] = 'image/jpeg'
@@ -69,7 +69,7 @@ def parse_result(result):
             est_orientation = 2
         est_distance = 999
         confidence = float(df.iloc[i]['confidence'])
-        if confidence >= 0.75:
+        if confidence >= 0.1:
             door_height = float(df.iloc[i]['ymax']) - float(df.iloc[i]['ymin'])
             dh_to_h_r = door_height / h
             if dh_to_h_r >= 1:
@@ -80,7 +80,7 @@ def parse_result(result):
                          [est_orientation,
                           float("{:.3f}".format(est_distance)),
                           float("{:.3f}".format(confidence))])
-    new_df = pd.DataFrame(data_list, columns=['orientation(clk)', 'distance(m)', 'confidence'])
+    new_df = pd.DataFrame(data_list, columns=['orie(clk)', 'dist(m)', 'conf'])
     df_json = new_df.to_json(orient='split')
     res_json = json.loads(df_json)
     return json.dumps(res_json, indent=4), new_df
