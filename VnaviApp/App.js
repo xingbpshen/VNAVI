@@ -16,7 +16,6 @@ import RNFetchBlob from 'rn-fetch-blob';
 import Tts from 'react-native-tts';
 import ReactNativeHapticFeedback from "react-native-haptic-feedback";
 
-
 const options = {
   enableVibrateFallback: true,
   ignoreAndroidSystemSettings: false
@@ -32,7 +31,7 @@ const iosParams = {
   iosVoiceId: 'com.apple.ttsbundle.Moira-compact'
 }
 
-const MAX_APPROACHING_READINGS = 100; // change depending on number of readings per time unit
+const MAX_APPROACHING_READINGS = 15; // change depending on number of readings per time unit
 
 class App extends Component {
   // Change this url to the server's IP:PORT, 10.0.2.2 is for AVD localhost testing purpose.
@@ -58,6 +57,15 @@ class App extends Component {
     totalSpoken: 0,
     lastSpokenWords: "",
     numberOfSame: 0,
+  };
+
+  componentDidMount = () => {
+    Tts.voices().then(voices => {
+      // voices.forEach((voice) => console.log(voice.id));
+      Tts.setDefaultVoice("en-au-x-auc-local")
+    });
+    Tts.setDefaultRate(0.6);
+    Tts.addEventListener('tts-finish', (event) => this.setState({ speaking: false })); // prevent from speaking before finishing
   };
 
   resetState = () => {
@@ -194,8 +202,8 @@ class App extends Component {
   delay = (time) => new Promise(resolve => setTimeout(resolve, time));
 
   takeStream = async () => {
-    // Modify above to take multiple images and pass them to AudioFeedback
-    if(this.state.running){
+    // Modified above to take multiple images and pass them to AudioFeedback
+    if (this.state.running) {
       return;
     }
     this.state.running = true;
@@ -272,16 +280,16 @@ class App extends Component {
   }
 
   speak = (words) => {
-    if(this.state.lastSpokenWords == words && this.state.numberOfSame < 3) {
-      this.setState({numberOfSame: this.state.numberOfSame + 1});
+    if (this.state.lastSpokenWords == words && this.state.numberOfSame < 3) {
+      this.setState({ numberOfSame: this.state.numberOfSame + 1 });
       return;
     }
-    if(this.state.numberOfSame >= 3){
-      this.setState({numberOfSame: 0});
+    if (this.state.numberOfSame >= 3) {
+      this.setState({ numberOfSame: 0 });
     }
-    if (this.state.totalSpoken == 10){
+    if (this.state.totalSpoken == 10) {
       Tts.stop();
-      this.setState({totalSpoken: 0});
+      this.setState({ totalSpoken: 0 });
     }
     // only speak if not already speaking
     if (!this.state.speaking) {
@@ -291,7 +299,6 @@ class App extends Component {
       } else {
         Tts.speak(words, iosParams);
       }
-
     }
   }
 
@@ -319,9 +326,9 @@ class App extends Component {
   }
 
   relativeDiff = (num1, num2) => {
-    if(num1 == 0){
+    if (num1 == 0) {
       return Math.abs(num1 - num2) / num2;
-    } else if(num2 == 0){
+    } else if (num2 == 0) {
       return Math.abs(num1 - num2) / num1;
     } else {
       return 0;
@@ -330,13 +337,12 @@ class App extends Component {
 
   searchPhase = (distances, angles) => {
     console.log("Door Detected");
-    this.vibrateIntensityBasedOnDistance(distances[0]);
     distances[0] = Math.round(distances[0] * 10) / 10;
     console.log(distances[0] + " meters away");
     if (this.state.mode == "Voice") {
-      if(distances[0] != 0){
+      if (distances[0] != 0) {
         this.speak("A door was detected, " + distances[0] + " meters away, " + this.outputPositionText(angles[0])); // maybe filter out very high distances (e.g > 10 meters)
-      } else{
+      } else {
         this.speak("A door was detected, " + this.outputPositionText(angles[0]));
       }
       console.log("At " + angles[0] + " o'clock");
@@ -348,7 +354,7 @@ class App extends Component {
       let ang2 = this.state.doorReadings.angles[this.state.doorReadings.angles.length - 1];
       console.log(this.relativeDiff(distances[0], dist2));
       if (this.relativeDiff(distances[0], dist2) < 0.5 && Math.abs(angles[0] - ang2) <= 2) {
-        if (distances[0] > 2) {
+        if (distances[0] > 2) { // we are more than 2 meters away
           this.setState(prevState => ({
             doorReadings: {
               dists: [...prevState.doorReadings.dists, distances],
@@ -357,7 +363,7 @@ class App extends Component {
             phase: "Calibrating"
           }));
           return;
-        } else if (distances[0] > 0.5 && distances[0] < 2) {
+        } else if (distances[0] > 0.5 && distances[0] < 2) { // we are between 0.5 and 2 meters away
           this.setState(prevState => ({
             doorReadings: {
               dists: [...prevState.doorReadings.dists, distances],
@@ -366,17 +372,26 @@ class App extends Component {
             phase: "Approaching"
           }));
           return;
-        } else if (distances[0] > 0) {
-          console.log("reach for doorknob");
-          this.speak("Reach for the door, it is only " + distances[0] + " meters away, " + this.outputPositionText(angles[0]));
-        } else {
+        } else if (distances[0] > 0) { // we are less than 0.5 meters away
+          this.setState(prevState => ({
+            doorReadings: {
+              dists: [...prevState.doorReadings.dists, distances],
+              angles: [...prevState.doorReadings.angles, angles]
+            },
+            phase: "Approaching"
+          }));
+          return;
+        } else { // we are 0 meters away
           // maybe wait for a second reading to confirm
           console.log("door reached already");
-          this.speak("Door reached!");
+          if (this.state.mode == "Voice") {
+            this.speak("Door reached!");
+          } else {
+            this.vibrateIntensityBasedOnDistance(distances[0]);
+          }
           this.resetState();
           return;
         }
-
       }
     }
     this.setState(prevState => ({
@@ -390,13 +405,15 @@ class App extends Component {
 
   calibratingPhase = (distances, angles) => {
     console.log("Calibrating phase");
-    this.vibrateIntensityBasedOnDistance(distances[0]);
     distances[0] = Math.round(distances[0] * 10) / 10;
     console.log(distances[0] + " meters away");
-    if (distances[0] > 2) {
-      this.speak("Continue approaching, only " + distances[0] + " meters away, " + this.outputPositionText(angles[0]));
-      return;
-    } else if (distances[0] > 0.5 && distances[0] < 2) {
+    if (distances[0] > 2) { // we are greater than 2 meters away
+      if (this.state.mode == "Voice") {
+        this.speak("Continue approaching, only " + distances[0] + " meters away, " + this.outputPositionText(angles[0]));
+      } else {
+        this.vibrateIntensityBasedOnDistance(distances[0]);
+      }
+    } else if (distances[0] > 0.5 && distances[0] < 2) { // we are between 0.5 and 2 meters away
       this.setState(prevState => ({
         doorReadings: {
           dists: [...prevState.doorReadings.dists, distances],
@@ -405,14 +422,34 @@ class App extends Component {
         phase: "Approaching"
       }));
       // maybe wait for a second reading to confirm
-      this.speak("Calibration complete, continue approaching, you are now " + distances[0] + " meters away. Door is " + this.outputPositionText(angles[0]));
+      if (this.state.mode == "Voice") {
+        this.speak("Calibration complete, continue approaching, you are now " + distances[0] + " meters away. Door is " + this.outputPositionText(angles[0]));
+      } else {
+        this.vibrateIntensityBasedOnDistance(distances[0]);
+      }
       return;
-    } else if (distances[0] > 0) {
+    } else if (distances[0] > 0) { // we are less than 0.5 meters away
+      this.setState(prevState => ({
+        doorReadings: {
+          dists: [...prevState.doorReadings.dists, distances],
+          angles: [...prevState.doorReadings.angles, angles]
+        },
+        phase: "Approaching"
+      }));
       console.log("reach for doorknob");
-      this.speak("Reach for the door, it is only " + distances[0] + " meters away, " + this.outputPositionText(angles[0]));
-    } else {
+      if (this.state.mode == "Voice") {
+        this.speak("Reach for the door, it is only " + distances[0] + " meters away, " + this.outputPositionText(angles[0]));
+      } else {
+        this.vibrateIntensityBasedOnDistance(distances[0]);
+      }
+      return;
+    } else { // we are 0 meters away
       console.log("door reached already");
-      this.speak("Door reached!");
+      if (this.state.mode == "Voice") {
+        this.speak("Door reached!");
+      } else {
+        this.vibrateIntensityBasedOnDistance(distances[0]);
+      }
       this.resetState();
       return;
     }
@@ -428,22 +465,32 @@ class App extends Component {
 
   approachingPhase = (distances, angles) => {
     console.log("New detection");
-    this.vibrateIntensityBasedOnDistance(distances[0]);
     distances[0] = Math.round(distances[0] * 10) / 10;
     console.log(distances[0] + " meters away");
-    if (distances[0] > 2) {
+    if (distances[0] > 2) { // we are greater than 2 meters away, which is impossible in the approaching phase
       console.log("Invalid reading");
       return;
-    } else if (distances[0] > 0.5 && distances[0] < 2) {
-      this.speak("Continue approaching, only " + distances[0] + " meters away, " + this.outputPositionText(angles[0]));
-      return;
-    } else if (distances[0] > 0) {
+    } else if (distances[0] > 0.5 && distances[0] < 2) { // we are between 0.5 and 2 meters away
+      if (this.state.mode == "Voice") {
+        this.speak("Continue approaching, only " + distances[0] + " meters away, " + this.outputPositionText(angles[0]));
+      } else {
+        this.vibrateIntensityBasedOnDistance(distances[0]);
+      }
+    } else if (distances[0] > 0) { // we are less than 0.5 meters away
       console.log("reach for doorknob");
-      this.speak("Reach for the door, it is only " + distances[0] + " meters away, " + this.outputPositionText(angles[0]));
-    } else {
+      if (this.state.mode == "Voice") {
+        this.speak("Reach for the door, it is only " + distances[0] + " meters away, " + this.outputPositionText(angles[0]));
+      } else {
+        this.vibrateIntensityBasedOnDistance(distances[0]);
+      }
+    } else { // we are 0 meters away
       // maybe wait for a second reading to confirm
       console.log("door reached already");
-      this.speak("Door reached!");
+      if (this.state.mode == "Voice") {
+        this.speak("Door reached!");
+      } else {
+        this.vibrateIntensityBasedOnDistance(distances[0]);
+      }
       this.resetState();
       return;
     }
@@ -473,10 +520,12 @@ class App extends Component {
       distances.push(distance);
       angles.push(angle);
     }
+
     if (distances.length == 0) {
       console.log("No results");
       return;
     }
+
     if (this.state.phase == "Searching") {
       this.searchPhase(distances, angles);
     } else if (this.state.phase == "Calibrating") {
@@ -484,17 +533,7 @@ class App extends Component {
     } else {
       this.approachingPhase(distances, angles);
     }
-
   }
-
-  componentDidMount = () => {
-    Tts.voices().then(voices => {
-      // voices.forEach((voice) => console.log(voice.id));
-      Tts.setDefaultVoice("en-au-x-auc-local")
-    });
-    Tts.setDefaultRate(0.6);
-    Tts.addEventListener('tts-finish', (event) => this.setState({ speaking: false })); // prevent from speaking before finishing
-  };
 
   stopStream = () => {
     this.setState({ running: false });
