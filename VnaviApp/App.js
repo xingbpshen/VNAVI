@@ -15,6 +15,7 @@ import { RNCamera } from 'react-native-camera';
 import RNFetchBlob from 'rn-fetch-blob';
 import Tts from 'react-native-tts';
 import ReactNativeHapticFeedback from "react-native-haptic-feedback";
+import Sound from 'react-native-sound';
 
 const options = {
   enableVibrateFallback: true,
@@ -33,6 +34,34 @@ const iosParams = {
 
 const MAX_APPROACHING_READINGS = 15; // change depending on number of readings per time unit
 
+const sounds = ['opening_turning_door_handle.mp3', 'beep_1_center.mp3', 'beep_1_left.mp3',
+  'beep_1_right.mp3', 'beep_2_center.mp3', 'beep_2_left.mp3', 'beep_2_right.mp3',
+  'beep_3_center.mp3', 'beep_3_left.mp3', 'beep_3_right.mp3']
+
+const map_sounds = {
+  'door_opening': 'opening_turning_door_handle.mp3',
+  'beep_1_center': 'beep_1_center.mp3',
+  'beep_1_left': 'beep_1_left.mp3',
+  'beep_1_right': 'beep_1_right.mp3',
+  'beep_2_center': 'beep_2_center.mp3',
+  'beep_2_left': 'beep_2_left.mp3',
+  'beep_2_right': 'beep_2_right.mp3',
+  'beep_3_center': 'beep_3_center.mp3',
+  'beep_3_left': 'beep_3_left.mp3',
+  'beep_3_right': 'beep_3_right.mp3'
+}
+
+const instructions = "Welcome to the Vision-guided Navigation Assistance for the Visually Impaired Application. "
++ "This application will help you traverse through doorways by performing camera captured image analysis and giving audio navigation. "
++ "To begin, choose the mode of feedback you would like to receive using the TOGGLE MODE button below. "
++ "Two modes are proposed: Voice mode and Beep mode. In voice mode, my voice will indicate where the locations "
++ "of doors are and how close you are to them. In beep mode, spatialized beeps will be heard around you once doors are detected. "
++ "A single beep indicates a door found more than 3 meters away, 2 beeps indicate the door is closer between 2 and 3 meters away, "
++ "and 3 beeps indicate than the door is less than 1 meter away. When you hear a door shutting sound, you have reached the door! "
++ "The beeps are also spatialized relatively to the direction of the door, so a door slightly to the left will produce a beep "
++ "panned to the left. Press the TAKE STREAM AND PRODUCE OUTPUT button below to start the stream and hit the STOP STREAM to stop. "
++ "Happy navigation!";
+
 class App extends Component {
   // Change this url to the server's IP:PORT, 10.0.2.2 is for AVD localhost testing purpose.
   url = 'http://132.206.74.92:8002/';
@@ -42,6 +71,7 @@ class App extends Component {
   // Image resize
   h = 1280;
   w = 640;
+  beep = '';
 
   state = {
     takingPic: false,
@@ -59,6 +89,27 @@ class App extends Component {
     numberOfSame: 0,
   };
 
+  setupSounds() {
+    for (let i = 0; i < sounds.length; i++) {
+        let sound = new Sound(sounds[i], Sound.MAIN_BUNDLE, (error) => {
+            if (error) {
+                console.log('failed to load the sound', error);
+                return;
+            }
+            console.log('sound ' + sounds[i] + ' loaded successfully');
+        });
+        // Reduce the volume by half
+        sound.setVolume(0.5);
+
+        this.setState(prevState => ({
+            sounds: {
+                ...prevState.sounds,
+                [sounds[i]]: sound
+            }
+        }));
+    }
+}
+
   componentDidMount = () => {
     Tts.voices().then(voices => {
       // voices.forEach((voice) => console.log(voice.id));
@@ -66,6 +117,8 @@ class App extends Component {
     });
     Tts.setDefaultRate(0.6);
     Tts.addEventListener('tts-finish', (event) => this.setState({ speaking: false })); // prevent from speaking before finishing
+
+    this.setupSounds();
   };
 
   resetState = () => {
@@ -279,6 +332,19 @@ class App extends Component {
     }
   }
 
+  speakInstructions = (words) => {
+    Tts.setDefaultRate(0.5);
+    if (!this.state.speaking) {
+      this.setState({ speaking: true });
+      if (Platform.OS === 'android') {
+        Tts.speak(words, { androidParams: androidParams });
+      } else {
+        Tts.speak(words, iosParams);
+      }
+    }
+    Tts.setDefaultRate(0.6);
+  }
+
   speak = (words) => {
     if (this.state.lastSpokenWords == words && this.state.numberOfSame < 3) {
       this.setState({ numberOfSame: this.state.numberOfSame + 1 });
@@ -302,6 +368,32 @@ class App extends Component {
     }
   }
 
+  playSound = (sound) => {
+    // Get the current playback point in seconds
+    sound.getCurrentTime((seconds) => console.log('playing at ' + seconds));
+
+    // Pause the sound
+    sound.pause();
+
+    // Stop the sound and rewind to the beginning
+    sound.stop(() => {
+        // Note: If you want to play a sound after stopping and rewinding it,
+        // it is important to call play() in a callback.
+        sound.play((success) => {
+            if (success) {
+                console.log('successfully finished playing');
+                sound.stop();
+            } else {
+                console.log('playback failed due to audio decoding errors');
+                sound.stop();
+            }
+        });;
+    });
+
+    // Release the audio player resource
+    // sound.release();
+  }
+
   vibrateIntensityBasedOnDistance = (distance) => {
     // possible looping as distance gets smaller
     if (distance < 1) {
@@ -313,6 +405,33 @@ class App extends Component {
     } else {
       ReactNativeHapticFeedback.trigger("impactLight", options);
       console.log("vibrate light");
+    }
+  }
+
+  beepBasedOnDistanceAndAngle = (distance, angle) => {
+    let beep;
+    if (distance < 1) {
+      beep = this.state.sounds[map_sounds['beep_3_center']];
+    } else if (distance < 2) {
+      beep = this.state.sounds[map_sounds['beep_2_center']];
+    } else {
+      beep = this.state.sounds[map_sounds['beep_1_center']];
+    }
+    if (angle == 10) {
+      beep.setPan(-1);
+      this.playSound(beep);
+    } else if (angle == 11) {
+      beep.setPan(-0.5);
+      this.playSound(beep);
+    } else if (angle == 12) {
+      beep.setPan(0);
+      this.playSound(beep);
+    } else if (angle == 1) {
+      beep.setPan(0.5);
+      this.playSound(beep);
+    } else if (angle == 2) {
+      beep.setPan(1);
+      this.playSound(beep);
     }
   }
 
@@ -347,7 +466,8 @@ class App extends Component {
       }
       console.log("At " + angles[0] + " o'clock");
     } else {
-      this.vibrateIntensityBasedOnDistance(distances[0]);
+      //this.vibrateIntensityBasedOnDistance(distances[0]);
+      this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
     }
     if (this.state.doorReadings.dists.length >= 1) {
       let dist2 = this.state.doorReadings.dists[this.state.doorReadings.dists.length - 1];
@@ -387,7 +507,8 @@ class App extends Component {
           if (this.state.mode == "Voice") {
             this.speak("Door reached!");
           } else {
-            this.vibrateIntensityBasedOnDistance(distances[0]);
+            //this.vibrateIntensityBasedOnDistance(distances[0]);
+            this.playSound(this.state.sounds[map_sounds['door_opening']])
           }
           this.resetState();
           return;
@@ -411,7 +532,8 @@ class App extends Component {
       if (this.state.mode == "Voice") {
         this.speak("Continue approaching, only " + distances[0] + " meters away, " + this.outputPositionText(angles[0]));
       } else {
-        this.vibrateIntensityBasedOnDistance(distances[0]);
+        //this.vibrateIntensityBasedOnDistance(distances[0]);
+        this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
       }
     } else if (distances[0] > 0.5 && distances[0] < 2) { // we are between 0.5 and 2 meters away
       this.setState(prevState => ({
@@ -425,7 +547,8 @@ class App extends Component {
       if (this.state.mode == "Voice") {
         this.speak("Calibration complete, continue approaching, you are now " + distances[0] + " meters away. Door is " + this.outputPositionText(angles[0]));
       } else {
-        this.vibrateIntensityBasedOnDistance(distances[0]);
+        //this.vibrateIntensityBasedOnDistance(distances[0]);
+        this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
       }
       return;
     } else if (distances[0] > 0) { // we are less than 0.5 meters away
@@ -440,7 +563,8 @@ class App extends Component {
       if (this.state.mode == "Voice") {
         this.speak("Reach for the door, it is only " + distances[0] + " meters away, " + this.outputPositionText(angles[0]));
       } else {
-        this.vibrateIntensityBasedOnDistance(distances[0]);
+        //this.vibrateIntensityBasedOnDistance(distances[0]);
+        this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
       }
       return;
     } else { // we are 0 meters away
@@ -448,7 +572,8 @@ class App extends Component {
       if (this.state.mode == "Voice") {
         this.speak("Door reached!");
       } else {
-        this.vibrateIntensityBasedOnDistance(distances[0]);
+        //this.vibrateIntensityBasedOnDistance(distances[0]);
+        this.playSound(this.state.sounds[map_sounds['door_opening']])
       }
       this.resetState();
       return;
@@ -474,14 +599,16 @@ class App extends Component {
       if (this.state.mode == "Voice") {
         this.speak("Continue approaching, only " + distances[0] + " meters away, " + this.outputPositionText(angles[0]));
       } else {
-        this.vibrateIntensityBasedOnDistance(distances[0]);
+        //this.vibrateIntensityBasedOnDistance(distances[0]);
+        this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
       }
     } else if (distances[0] > 0) { // we are less than 0.5 meters away
       console.log("reach for doorknob");
       if (this.state.mode == "Voice") {
         this.speak("Reach for the door, it is only " + distances[0] + " meters away, " + this.outputPositionText(angles[0]));
       } else {
-        this.vibrateIntensityBasedOnDistance(distances[0]);
+        //this.vibrateIntensityBasedOnDistance(distances[0]);
+        this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
       }
     } else { // we are 0 meters away
       // maybe wait for a second reading to confirm
@@ -489,7 +616,8 @@ class App extends Component {
       if (this.state.mode == "Voice") {
         this.speak("Door reached!");
       } else {
-        this.vibrateIntensityBasedOnDistance(distances[0]);
+        //this.vibrateIntensityBasedOnDistance(distances[0]);
+        this.playSound(this.state.sounds[map_sounds['door_opening']])
       }
       this.resetState();
       return;
@@ -544,12 +672,28 @@ class App extends Component {
   render() {
     return (
       <View style={styles.container}>
+                
         <RNCamera
           style={{ flex: 5, alignItems: 'center' }}
           ref={ref => {
             this.camera = ref;
           }}
-        />
+        >
+          <TouchableOpacity
+          activeOpacity={0.5}
+          style={styles.buttonHelp}
+          onPress={() => this.speakInstructions(instructions)}>
+          <Text
+            style={{
+              alignItems: 'center',
+              color: '#ffffff',
+              fontWeight: 'bold',
+            }}>
+            HELP
+          </Text>
+        </TouchableOpacity>
+      </RNCamera>
+
         <Text style={styles.text}>{(this.state.running ? this.state.phase + " phase" : "Not Running") + ":" + this.state.mode + " mode"}</Text>
         <TouchableOpacity
           activeOpacity={0.5}
@@ -599,7 +743,7 @@ class App extends Component {
         <Button
           title="Toggle mode"
           onPress={() => {
-            this.setState({ mode: this.state.mode == "Voice" ? "Vibration" : "Voice" });
+            this.setState({ mode: this.state.mode == "Voice" ? "Beep" : "Voice" });
           }}
         />
         <Text>{this.state.mode}</Text>
@@ -646,12 +790,18 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
   },
+  buttonHelp:{
+    alignItems: 'center',
+    backgroundColor: '#008ecc',
+    padding: 5,
+  },
   text: {
     color: 'white',
     fontSize: 15,
     fontWeight: 'bold',
     textAlign: 'center',
-    padding: 10,
+    padding: 5,
+    backgroundColor: 'black',
   },
   modal: {
     justifyContent: 'center',
