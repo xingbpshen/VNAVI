@@ -38,7 +38,8 @@ const sounds = [
   'opening_turning_door_handle.mp3',
   'beep_1_center.mp3',
   'beep_2_center.mp3',
-  'beep_3_center.mp3'
+  'beep_3_center.mp3',
+  'beep_4_center.mp3',
 ]
 
 const map_sounds = {
@@ -46,18 +47,17 @@ const map_sounds = {
   'beep_1_center': 'beep_1_center.mp3',
   'beep_2_center': 'beep_2_center.mp3',
   'beep_3_center': 'beep_3_center.mp3',
+  'beep_4_center': 'beep_4_center.mp3',
 }
 
 const instructions = "Welcome to the Vision-guided Navigation Assistance for the Visually Impaired Application. "
   + "This application will help you traverse through doorways by performing camera captured image analysis and giving audio navigation. "
   + "To begin, choose the mode of feedback you would like to receive using the TOGGLE MODE button below. "
-  + "Two modes are proposed: Voice mode and Beep mode. In voice mode, my voice will indicate where the locations "
-  + "of doors are and how close you are to them. In beep mode, spatialized beeps will be heard around you once doors are detected. "
-  + "A single beep indicates a door found more than 3 meters away, 2 beeps indicate the door is closer between 1.5 and 3 meters away, "
-  + "and 3 beeps indicate than the door is less than 1.5 meters away. When you hear a door shutting sound, you have reached the door! "
-  + "The beeps are also spatialized relatively to the direction of the door, so a door slightly to the left will produce a beep "
-  + "panned to the left. Press the TAKE STREAM AND PRODUCE OUTPUT button below to start the stream and hit the STOP STREAM to stop. "
-  + "Happy navigation!";
+  + "Two modes are proposed: Voice mode and Beep mode. In voice mode, my voice will indicate the locations "
+  + "of doors and how close you are to them. In beep mode, spatialized beeps will be heard around you once doors are detected. "
+  + "These beeps will get increasingly faster as you approach the door (from 1 to 4 beeps). When you hear a door shutting sound, you have reached the door! "
+  + "The beeps are also spatialized relatively to the direction of the door, so a door slightly to the left will produce a beep panned "
+  + "to the left. Press the TAKE STREAM AND PRODUCE OUTPUT button below to start the stream and hit the STOP STREAM to stop. Happy navigation!";
 
 class App extends Component {
   // Change this url to the server's IP:PORT, 10.0.2.2 is for AVD localhost testing purpose.
@@ -352,7 +352,6 @@ class App extends Component {
       this.totalSpoken = 0;
     }
     // only speak if not already speaking
-    console.log("should speak: " + this.state.speaking)
     if (!this.state.speaking || words.includes("reached")) {
       this.setState({ speaking: true });
       this.totalSpoken++;
@@ -407,7 +406,9 @@ class App extends Component {
 
   beepBasedOnDistanceAndAngle = (distance, angle) => {
     let beep;
-    if (distance < 1.5) {
+    if (distance < 0.5) {
+      beep = this.sounds[map_sounds['beep_4_center']];
+    } else if (distance < 1.6) {
       beep = this.sounds[map_sounds['beep_3_center']];
     } else if (distance < 3) {
       beep = this.sounds[map_sounds['beep_2_center']];
@@ -460,7 +461,13 @@ class App extends Component {
     console.log(distances[0] + " meters away");
     this.doorReadings.dists.push(distances[0]);
     this.doorReadings.angles.push(angles[0]);
-    if (this.doorReadings.dists.length > 1) {
+    if (this.doorReadings.dists.length <= 1) {
+      if (this.state.mode == "Voice") {
+        this.speak("A door was detected, " + distances[0] + " meters away, " + this.outputPositionText(angles[0])); // maybe filter out very high distances (e.g > 10 meters)
+      } else {
+        this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
+      }
+    } else {
       let dist_prev = this.doorReadings.dists[this.doorReadings.dists.length - 2];
       let ang_prev = this.doorReadings.angles[this.doorReadings.angles.length - 2];
       console.log(this.relativeDiff(distances[0], dist_prev));
@@ -496,6 +503,10 @@ class App extends Component {
           }
           this.resetState();
         }
+      } else {
+        if (this.state.mode == "Beep") {
+          this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
+        }
       }
     }
 
@@ -514,27 +525,54 @@ class App extends Component {
         this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
       }
     } else if (distances[0] > 0.5 && distances[0] < 2) { // we are between 0.5 and 2 meters away
-      this.setState({ phase: "Approaching" });
-      if (this.state.mode == "Voice") {
-        this.speak("Calibration complete, continue approaching, you are now " + distances[0] + " meters away. Door is " + this.outputPositionText(angles[0]));
+      let dist_prev = this.doorReadings.dists[this.doorReadings.dists.length - 2];
+      let ang_prev = this.doorReadings.angles[this.doorReadings.angles.length - 2];
+      console.log(this.relativeDiff(distances[0], dist_prev));
+      if (this.relativeDiff(distances[0], dist_prev) < 0.5 && Math.abs(angles[0] - ang_prev) <= 2) {
+        this.setState({ phase: "Approaching" });
+        if (this.state.mode == "Voice") {
+          this.speak("Calibration complete, continue approaching, you are now " + distances[0] + " meters away. Door is " + this.outputPositionText(angles[0]));
+        } else {
+          this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
+        }
       } else {
-        this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
+        if (this.state.mode == "Beep") {
+          this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
+        }
       }
     } else if (distances[0] > 0) { // we are less than 0.5 meters away
-      this.setState({ phase: "Approaching" });
-      if (this.state.mode == "Voice") {
-        this.speak("Reach for the door, it is only " + distances[0] + " meters away, " + this.outputPositionText(angles[0]));
+      let dist_prev = this.doorReadings.dists[this.doorReadings.dists.length - 2];
+      let ang_prev = this.doorReadings.angles[this.doorReadings.angles.length - 2];
+      console.log(this.relativeDiff(distances[0], dist_prev));
+      if (this.relativeDiff(distances[0], dist_prev) < 0.5 && Math.abs(angles[0] - ang_prev) <= 2) {
+        this.setState({ phase: "Approaching" });
+        if (this.state.mode == "Voice") {
+          this.speak("Reach for the door, it is only " + distances[0] + " meters away, " + this.outputPositionText(angles[0]));
+        } else {
+          this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
+        }
       } else {
-        this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
+        if (this.state.mode == "Beep") {
+          this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
+        }
       }
     } else { // we are 0 meters away
-      console.log("door reached already");
-      if (this.state.mode == "Voice") {
-        this.speak("Door reached!");
+      let dist_prev = this.doorReadings.dists[this.doorReadings.dists.length - 2];
+      let ang_prev = this.doorReadings.angles[this.doorReadings.angles.length - 2];
+      console.log(this.relativeDiff(distances[0], dist_prev));
+      if (this.relativeDiff(distances[0], dist_prev) < 0.5 && Math.abs(angles[0] - ang_prev) <= 2) {
+        console.log("door reached already");
+        if (this.state.mode == "Voice") {
+          this.speak("Door reached!");
+        } else {
+          this.playSound(this.sounds[map_sounds['door_opening']])
+        }
+        this.resetState();
       } else {
-        this.playSound(this.sounds[map_sounds['door_opening']])
+        if (this.state.mode == "Beep") {
+          this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
+        }
       }
-      this.resetState();
     }
   }
 
@@ -560,13 +598,22 @@ class App extends Component {
         this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
       }
     } else { // we are 0 meters away
-      console.log("door reached already");
-      if (this.state.mode == "Voice") {
-        this.speak("Door reached!");
+      let dist_prev = this.doorReadings.dists[this.doorReadings.dists.length - 2];
+      let ang_prev = this.doorReadings.angles[this.doorReadings.angles.length - 2];
+      console.log(this.relativeDiff(distances[0], dist_prev));
+      if (this.relativeDiff(distances[0], dist_prev) < 0.5 && Math.abs(angles[0] - ang_prev) <= 2) {
+        console.log("door reached already");
+        if (this.state.mode == "Voice") {
+          this.speak("Door reached!");
+        } else {
+          this.playSound(this.sounds[map_sounds['door_opening']])
+        }
+        this.resetState();
       } else {
-        this.playSound(this.sounds[map_sounds['door_opening']])
+        if (this.state.mode == "Beep") {
+          this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
+        }
       }
-      this.resetState();
     }
   }
 
