@@ -35,7 +35,6 @@ const iosParams = {
 const MAX_APPROACHING_READINGS = 15; // change depending on number of readings per time unit
 
 const sounds = [
-  'opening_turning_door_handle.mp3',
   'beep_1_center.mp3',
   'beep_2_center.mp3',
   'beep_3_center.mp3',
@@ -43,7 +42,6 @@ const sounds = [
 ]
 
 const map_sounds = {
-  'door_opening': 'opening_turning_door_handle.mp3',
   'beep_1_center': 'beep_1_center.mp3',
   'beep_2_center': 'beep_2_center.mp3',
   'beep_3_center': 'beep_3_center.mp3',
@@ -55,7 +53,7 @@ const instructions = "Welcome to the Vision-guided Navigation Assistance for the
   + "To begin, choose the mode of feedback you would like to receive using the TOGGLE MODE button below. "
   + "Two modes are proposed: Voice mode and Beep mode. In voice mode, my voice will indicate the locations "
   + "of doors and how close you are to them. In beep mode, spatialized beeps will be heard around you once doors are detected. "
-  + "These beeps will get increasingly faster as you approach the door (from 1 to 4 beeps). When you hear a door shutting sound, you have reached the door! "
+  + "These beeps will get increasingly faster as you approach the door (from 1 to 4 beeps). You will hear a voice indication when you have reached the door! "
   + "The beeps are also spatialized relatively to the direction of the door, so a door slightly to the left will produce a beep panned "
   + "to the left. Press the TAKE STREAM AND PRODUCE OUTPUT button below to start the stream and hit the STOP STREAM to stop. Happy navigation!";
 
@@ -496,11 +494,7 @@ class App extends Component {
         } else { // we are 0 meters away
           // maybe wait for a second reading to confirm
           console.log("door reached already");
-          if (this.state.mode == "Voice") {
-            this.speak("Door reached already");
-          } else {
-            this.playSound(this.sounds[map_sounds['door_opening']]);
-          }
+          this.speak("Door reached already");
           this.resetState();
         }
       } else {
@@ -562,11 +556,7 @@ class App extends Component {
       console.log(this.relativeDiff(distances[0], dist_prev));
       if (this.relativeDiff(distances[0], dist_prev) < 0.5 && Math.abs(angles[0] - ang_prev) <= 2) {
         console.log("door reached already");
-        if (this.state.mode == "Voice") {
-          this.speak("Door reached!");
-        } else {
-          this.playSound(this.sounds[map_sounds['door_opening']])
-        }
+        this.speak("Door reached!");
         this.resetState();
       } else {
         if (this.state.mode == "Beep") {
@@ -603,11 +593,7 @@ class App extends Component {
       console.log(this.relativeDiff(distances[0], dist_prev));
       if (this.relativeDiff(distances[0], dist_prev) < 0.5 && Math.abs(angles[0] - ang_prev) <= 2) {
         console.log("door reached already");
-        if (this.state.mode == "Voice") {
-          this.speak("Door reached!");
-        } else {
-          this.playSound(this.sounds[map_sounds['door_opening']])
-        }
+        this.speak("Door reached!");
         this.resetState();
       } else {
         if (this.state.mode == "Beep") {
