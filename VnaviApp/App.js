@@ -32,7 +32,7 @@ const iosParams = {
   iosVoiceId: 'com.apple.ttsbundle.Moira-compact'
 }
 
-const MAX_APPROACHING_READINGS = 15; // change depending on number of readings per time unit
+const MAX_UNKNOWN_READINGS = 5; // change depending on number of readings per time unit
 
 const sounds = [
   'beep_1_center.mp3',
@@ -82,6 +82,7 @@ class App extends Component {
     lastSpokenWords: "",
     numberOfSame: 0,
     sounds: {},
+    unknownReadings: 0,
   };
 
   setupSounds() {
@@ -128,6 +129,7 @@ class App extends Component {
       totalSpoken: 0,
       lastSpokenWords: "",
       numberOfSame: 0,
+      unknownReadings: 0,
     });
   };
 
@@ -459,7 +461,13 @@ class App extends Component {
     console.log(distances[0] + " meters away");
     this.state.doorReadings.dists.push(distances[0]);
     this.state.doorReadings.angles.push(angles[0]);
+    let dist_prev = this.state.doorReadings.dists[this.state.doorReadings.dists.length - 2];
+    let ang_prev = this.state.doorReadings.angles[this.state.doorReadings.angles.length - 2];
     this.setState({ doorReadings: this.state.doorReadings });
+    if (distances[0] > dist_prev) {
+      console.log("Door is getting further away");
+      return;
+    }
     if (this.state.doorReadings.dists.length <= 1) {
       if (this.state.mode == "Voice") {
         this.speak("A door was detected, " + distances[0] + " meters away, " + this.outputPositionText(angles[0])); // maybe filter out very high distances (e.g > 10 meters)
@@ -467,8 +475,6 @@ class App extends Component {
         this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
       }
     } else {
-      let dist_prev = this.state.doorReadings.dists[this.state.doorReadings.dists.length - 2];
-      let ang_prev = this.state.doorReadings.angles[this.state.doorReadings.angles.length - 2];
       console.log(this.relativeDiff(distances[0], dist_prev));
       if (this.relativeDiff(distances[0], dist_prev) < 0.5 && Math.abs(angles[0] - ang_prev) <= 2) {
         if (distances[0] > 2) { // we are more than 2 meters away
@@ -513,21 +519,25 @@ class App extends Component {
     console.log(distances[0] + " meters away");
     this.state.doorReadings.dists.push(distances[0]);
     this.state.doorReadings.angles.push(angles[0]);
+    let dist_prev = this.state.doorReadings.dists[this.state.doorReadings.dists.length - 2];
+    let ang_prev = this.state.doorReadings.angles[this.state.doorReadings.angles.length - 2];
     this.setState({ doorReadings: this.state.doorReadings });
+    if (distances[0] > dist_prev) {
+      console.log("Door is getting further away");
+      return;
+    }
     if (distances[0] > 2) { // we are greater than 2 meters away
       if (this.state.mode == "Voice") {
-        this.speak("Continue approaching, only " + distances[0] + " meters away, " + this.outputPositionText(angles[0]));
+        this.speak("Only " + distances[0] + " meters away, " + this.outputPositionText(angles[0]));
       } else {
         this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
       }
     } else if (distances[0] > 0.5 && distances[0] < 2) { // we are between 0.5 and 2 meters away
-      let dist_prev = this.state.doorReadings.dists[this.state.doorReadings.dists.length - 2];
-      let ang_prev = this.state.doorReadings.angles[this.state.doorReadings.angles.length - 2];
       console.log(this.relativeDiff(distances[0], dist_prev));
       if (this.relativeDiff(distances[0], dist_prev) < 0.5 && Math.abs(angles[0] - ang_prev) <= 2) {
         this.setState({ phase: "Approaching" });
         if (this.state.mode == "Voice") {
-          this.speak("Calibration complete, continue approaching, you are now " + distances[0] + " meters away. Door is " + this.outputPositionText(angles[0]));
+          this.speak("Calibration complete, you are now " + distances[0] + " meters away. Door is " + this.outputPositionText(angles[0]));
         } else {
           this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
         }
@@ -537,8 +547,6 @@ class App extends Component {
         }
       }
     } else if (distances[0] > 0) { // we are less than 0.5 meters away
-      let dist_prev = this.state.doorReadings.dists[this.state.doorReadings.dists.length - 2];
-      let ang_prev = this.state.doorReadings.angles[this.state.doorReadings.angles.length - 2];
       console.log(this.relativeDiff(distances[0], dist_prev));
       if (this.relativeDiff(distances[0], dist_prev) < 0.5 && Math.abs(angles[0] - ang_prev) <= 2) {
         this.setState({ phase: "Approaching" });
@@ -553,8 +561,6 @@ class App extends Component {
         }
       }
     } else { // we are 0 meters away
-      let dist_prev = this.state.doorReadings.dists[this.state.doorReadings.dists.length - 2];
-      let ang_prev = this.state.doorReadings.angles[this.state.doorReadings.angles.length - 2];
       console.log(this.relativeDiff(distances[0], dist_prev));
       if (this.relativeDiff(distances[0], dist_prev) < 0.5 && Math.abs(angles[0] - ang_prev) <= 2) {
         console.log("door reached already");
@@ -574,12 +580,18 @@ class App extends Component {
     console.log(distances[0] + " meters away");
     this.state.doorReadings.dists.push(distances[0]);
     this.state.doorReadings.angles.push(angles[0]);
+    let dist_prev = this.state.doorReadings.dists[this.state.doorReadings.dists.length - 2];
+    let ang_prev = this.state.doorReadings.angles[this.state.doorReadings.angles.length - 2];
     this.setState({ doorReadings: this.state.doorReadings });
+    if (distances[0] > dist_prev) {
+      console.log("Door is getting further away");
+      return;
+    }
     if (distances[0] > 2) { // we are greater than 2 meters away, which is impossible in the approaching phase
       console.log("Invalid reading");
     } else if (distances[0] > 0.5 && distances[0] < 2) { // we are between 0.5 and 2 meters away
       if (this.state.mode == "Voice") {
-        this.speak("Continue approaching, only " + distances[0] + " meters away, " + this.outputPositionText(angles[0]));
+        this.speak("Only " + distances[0] + " meters away, " + this.outputPositionText(angles[0]));
       } else {
         this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
       }
@@ -591,8 +603,6 @@ class App extends Component {
         this.beepBasedOnDistanceAndAngle(distances[0], angles[0]);
       }
     } else { // we are 0 meters away
-      let dist_prev = this.state.doorReadings.dists[this.state.doorReadings.dists.length - 2];
-      let ang_prev = this.state.doorReadings.angles[this.state.doorReadings.angles.length - 2];
       console.log(this.relativeDiff(distances[0], dist_prev));
       if (this.relativeDiff(distances[0], dist_prev) < 0.5 && Math.abs(angles[0] - ang_prev) <= 2) {
         console.log("door reached already");
@@ -622,6 +632,11 @@ class App extends Component {
 
     if (distances.length == 0) {
       console.log("No results");
+      if (this.state.unknownReadings >= MAX_UNKNOWN_READINGS) {
+        this.resetState();
+      } else {
+        this.setState({ unknownReadings: this.state.unknownReadings + 1 });
+      }
       return;
     }
 
