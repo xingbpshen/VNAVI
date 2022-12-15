@@ -638,6 +638,8 @@ class App extends Component {
         this.setState({ unknownReadings: this.state.unknownReadings + 1 });
       }
       return;
+    } else {
+      this.setState({ unknownReadings: 0 });
     }
 
     if (this.state.phase == "Searching") {
